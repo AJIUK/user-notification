@@ -1,0 +1,65 @@
+<?php
+
+namespace App\Providers;
+
+use Illuminate\Support\ServiceProvider;
+use UserNotification\Support\NotificationRegistry;
+use App\Enums\UserNotificationChannel;
+use App\Enums\UserNotificationType;
+
+class UserNotificationServiceProvider extends ServiceProvider
+{
+    /**
+     * Register services.
+     */
+    public function register(): void
+    {
+        //
+    }
+
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
+        // Регистрируем типы уведомлений
+        $this->registerNotificationTypes();
+
+        // Регистрируем каналы уведомлений
+        $this->registerNotificationChannels();
+    }
+
+    /**
+     * Зарегистрировать типы уведомлений
+     * Если вы используете enum, можно использовать UserNotificationType::cases()
+     * Если используете классы, передайте массив экземпляров
+     */
+    protected function registerNotificationTypes(): void
+    {
+        // Вариант 1: Если используете enum
+        NotificationRegistry::registerTypes(UserNotificationType::cases());
+
+        // Вариант 2: Если используете классы
+        // NotificationRegistry::registerTypes([
+        //     new UserNotificationType('SYSTEM', 'Системные', 'Хочу получать системные уведомления'),
+        //     // ...
+        // ]);
+    }
+
+    /**
+     * Зарегистрировать каналы уведомлений
+     * Если вы используете enum, можно использовать UserNotificationChannel::cases()
+     * Если используете классы, передайте массив экземпляров
+     */
+    protected function registerNotificationChannels(): void
+    {
+        // Вариант 1: Если используете enum
+        NotificationRegistry::registerChannels(UserNotificationChannel::cases());
+
+        // Вариант 2: Если используете классы
+        // NotificationRegistry::registerChannels([
+        //     new UserNotificationChannel('EMAIL', 1),
+        //     // ...
+        // ]);
+    }
+}

@@ -1,0 +1,43 @@
+<?php
+
+namespace App\Enums;
+
+use UserNotification\Contracts\NotificationTypeEnum;
+
+enum UserNotificationType: int implements NotificationTypeEnum
+{
+    case SYSTEM = 10;
+    // Добавьте свои типы уведомлений здесь
+
+    public function getTitle(): string
+    {
+        return match($this) {
+            self::SYSTEM => __('user-notification::type.title_system'),
+        };
+    }
+
+    public function getDescription(): string
+    {
+        return match($this) {
+            self::SYSTEM => __('user-notification::type.description_system'),
+        };
+    }
+
+    public function getDefaultChannels(): array{
+        return match($this) {
+            self::SYSTEM => [
+                UserNotificationChannel::MAIL,
+            ],
+        };
+    }
+
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+}

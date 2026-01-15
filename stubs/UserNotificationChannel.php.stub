@@ -1,0 +1,51 @@
+<?php
+
+namespace App\Enums;
+
+use App\Notifications\Channels\MailChannel;
+use UserNotification\Channels\ChannelInterface;
+use UserNotification\Contracts\NotificationChannelEnum;
+
+enum UserNotificationChannel: int implements NotificationChannelEnum
+{
+    case MAIL = 10;
+
+    /**
+     * Получить экземпляр канала для данного enum
+     * @return ChannelInterface
+     */
+    public function getChannel(): ChannelInterface
+    {
+        return match($this) {
+            self::MAIL => app(abstract: MailChannel::class),
+        };
+    }
+
+    /**
+     * Получить имя класса канала для данного enum
+     * @return string
+     */
+    public function getChannelClassName(): string
+    {
+        return match($this) {
+            self::MAIL => MailChannel::class,
+        };
+    }
+
+    public function getTitle(): string
+    {
+        return match($this) {
+            self::MAIL => __('user-notification::channel.title.mail'),
+        };
+    }
+
+    public function getValue()
+    {
+        return $this->value;
+    }
+
+    public function getName(): string
+    {
+        return $this->name;
+    }
+}

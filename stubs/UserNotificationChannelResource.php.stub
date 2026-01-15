@@ -1,0 +1,28 @@
+<?php
+
+namespace App\Http\Resources;
+
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
+use UserNotification\Contracts\NotificationChannelEnum;
+
+/**
+ * Ресурс для канала уведомления (NotificationChannelEnum)
+ */
+class UserNotificationChannelResource extends JsonResource
+{
+    /**
+     * Преобразовать ресурс в массив
+     *
+     * @return array<string, mixed>
+     */
+    public function toArray(Request $request): array
+    {
+        /** @var NotificationChannelEnum $this */
+        return [
+            'id' => $this->getValue(),
+            'code' => $this->getName(),
+            'title' => $this->getTitle(),
+        ];
+    }
+}

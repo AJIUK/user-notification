@@ -1,0 +1,75 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Foundation\Validation\ValidatesRequests;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Routing\Controller;
+use App\Http\Requests\UpdateUserNotificationPreferencesRequest;
+use App\Http\Resources\UserNotificationChannelResource;
+use App\Http\Resources\UserNotificationPreferenceResource;
+use App\Http\Resources\UserNotificationTypeResource;
+use UserNotification\Services\NotificationPreferencesService;
+use UserNotification\Support\NotificationRegistry;
+
+/**
+ * Контроллер для работы с настройками уведомлений пользователей
+ */
+class UserNotificationPreferencesController extends Controller
+{
+    use AuthorizesRequests, ValidatesRequests;
+
+    public function __construct(
+        protected NotificationPreferencesService $preferencesService
+    ) {}
+
+    /**
+     * Получить настройки уведомлений пользователя
+     *
+     * @param Request $request
+     * @return AnonymousResourceCollection
+     */
+    public function getNotificationPreferences(Request $request): AnonymousResourceCollection
+    {
+        $preferences = $this->preferencesService->getNotificationPreferences(request()->user());
+
+        return UserNotificationPreferenceResource::collection($preferences);
+    }
+
+    /**
+     * Получить словари (типы и каналы уведомлений)
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function getNotificationDictionaries(Request $request): JsonResponse
+    {
+        $types = NotificationRegistry::getTypes();
+        $channels = NotificationRegistry::getChannels();
+
+        return response()->json([
+            'notification_types' => UserNotificationTypeResource::collection($types),
+            'notification_channels' => UserNotificationChannelResource::collection($channels),
+        ]);
+    }
+
+    /**
+     * Установить настройки уведомлений пользователя
+     *
+     * @param UpdateUserNotificationPreferencesRequest $request
+     * @return JsonResponse
+     */
+    public function setNotificationPreferences(
+        UpdateUserNotificationPreferencesRequest $request
+    ): JsonResponse {
+        $preferences = $request->validated();
+        $this->preferencesService->setNotificationPreferences(request()->user(), $preferences);
+
+        return response()->json([
+            'message' => 'Notification preferences updated successfully',
+        ]);
+    }
+}

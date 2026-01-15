@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Notifications\Channels;
+
+use Illuminate\Notifications\Messages\MailMessage;
+use UserNotification\Channels\ChannelInterface;
+use UserNotification\Contracts\NotifiableUser;
+use UserNotification\Support\UserNotificationLines;
+use UserNotification\Support\UserNotificationMarkdown;
+use UserNotification\UserNotification;
+use Illuminate\Notifications\Notification;
+
+class MailChannel extends \Illuminate\Notifications\Channels\MailChannel implements ChannelInterface
+{
+    /**
+     * Получить Markdown для email-уведомления
+     * @return UserNotificationMarkdown
+     */
+    protected function getMarkdown(UserNotification $notification, NotifiableUser $user): UserNotificationMarkdown
+    {
+        // Устанавливаем локаль пользователя
+        $notification->setUserLocale($user);
+
+        $layout = $notification->getLayout($user, UserNotificationChannel::MAIL);
+
+        $layout->addLines((new UserNotificationLines())
+            ->add('user-notification::notification.thank_you')
+            ->add('user-notification::notification.your_team', ['team' => config('app.name', 'Team')])
+        );
+
+        return new UserNotificationMarkdown("user-notification::emails.user-notification", [
+            'title' => $notification->getTitle($user),
+            'layout' => $layout,
+        ]);
+    }
+
+    /**
+     * Отправить уведомление через email канал
+     *
+     * Реализует ChannelInterface::send с совместимостью с родительским классом
+     *
+     * @param NotifiableUser|mixed $notifiable
+     * @param UserNotification|Notification $notification
+     * @return void
+     */
+    public function send($notifiable, Notification $notification): void
+    {
+        // Проверяем типы для использования специфичных методов
+        if (!$notification instanceof UserNotification) {
+            throw new \InvalidArgumentException('Notification must be instance of UserNotification');
+        }
+
+        if (!$notifiable instanceof NotifiableUser) {
+            throw new \InvalidArgumentException('Notifiable must implement NotifiableUser interface');
+        }
+
+        $markdown = $this->getMarkdown($notification, $notifiable);
+
+        $message = (new MailMessage())
+            ->subject(__($notification->getSubject($notifiable)))
+            ->markdown($markdown->view, $markdown->data);
+
+        $notification->setToMail($message);
+
+        parent::send($notifiable, $notification);
+    }
+}

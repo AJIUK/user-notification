@@ -1,0 +1,36 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+use UserNotification\Support\NotificationRegistry;
+use UserNotification\Support\UserNotificationLocale;
+
+/**
+ * Request для обновления настроек уведомлений пользователя
+ */
+class UpdateUserNotificationPreferencesRequest extends FormRequest
+{
+    /**
+     * Определить, авторизован ли пользователь для выполнения этого запроса
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Правила валидации
+     */
+    public function rules(): array
+    {
+        return [
+            'locale' => ['required', 'string', Rule::in(UserNotificationLocale::values())],
+            'preferences' => ['required', 'array'],
+            'preferences.*.type' => ['required', Rule::in(NotificationRegistry::getTypeValues())],
+            'preferences.*.channel' => ['required', Rule::in(NotificationRegistry::getChannelValues())],
+            'preferences.*.is_active' => ['required', 'boolean'],
+        ];
+    }
+}

@@ -1,0 +1,110 @@
+<?php
+
+namespace {{ namespace }};
+
+use UserNotification\UserNotification;
+use UserNotification\Contracts\NotifiableUser;
+use UserNotification\Contracts\NotificationTypeEnum;
+use UserNotification\Contracts\NotificationChannelEnum;
+use UserNotification\Support\UserNotificationLayout;
+use UserNotification\Support\UserNotificationLines;
+use UserNotification\Support\UserNotificationTestList;
+use UserNotification\Support\UserNotificationTest;
+use App\Enums\UserNotificationType;
+
+class {{ class }} extends UserNotification
+{
+    /**
+     * Получить тип уведомления
+     *
+     * @return NotificationTypeEnum
+     */
+    public function getNotificationType(): NotificationTypeEnum
+    {
+        return UserNotificationType::SYSTEM;
+    }
+
+    /**
+     * Получить тему уведомления
+     * Возвращает ключ локализации или переведенную строку
+     *
+     * @param NotifiableUser $user
+     * @return string
+     */
+    public function getSubject(NotifiableUser $user): string
+    {
+        return 'notifications.{{ name }}.subject';
+    }
+
+    /**
+     * Получить заголовок уведомления
+     * По умолчанию используется тема из getSubject
+     * Можно переопределить для кастомного заголовка
+     *
+     * @param NotifiableUser $user
+     * @return string|null
+     */
+    public function getTitle(NotifiableUser $user): ?string
+    {
+        return parent::getTitle($user);
+    }
+
+    /**
+     * Получить структуру уведомления
+     *
+     * @param NotifiableUser $user
+     * @param NotificationChannelEnum $channel
+     * @return UserNotificationLayout
+     */
+    public function getLayout(NotifiableUser $user, NotificationChannelEnum $channel): UserNotificationLayout
+    {
+        $layout = new UserNotificationLayout();
+
+        $lines = new UserNotificationLines();
+        $lines->add('notifications.{{ name }}.message');
+
+        $layout->addLines($lines);
+
+        return $layout;
+    }
+
+    /**
+     * Получить список тестовых уведомлений
+     *
+     * @param NotifiableUser $user
+     * @return UserNotificationTestList
+     */
+    public static function testList(NotifiableUser $user): UserNotificationTestList
+    {
+        $list = new UserNotificationTestList();
+
+        // Добавьте тестовые уведомления здесь
+        // $list->add(new UserNotificationTest(new static(), $user));
+
+        return $list;
+    }
+
+    /**
+     * Определить важность уведомления по умолчанию
+     * Можно переопределить для важных уведомлений
+     *
+     * @return bool
+     */
+    public function defaultImportance(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Определить каналы по умолчанию
+     * Возвращает null для использования настроек пользователя
+     * Можно переопределить для принудительной отправки в определенные каналы
+     *
+     * @param NotifiableUser $user
+     * @return array|null
+     */
+    public function defaultChannels(NotifiableUser $user): ?array
+    {
+        return null;
+    }
+}
