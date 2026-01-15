@@ -1,5 +1,5 @@
 {
-    "name": "your-vendor/user-notification",
+    "name": "AJIUK/user-notification",
     "description": "Библиотека для работы с уведомлениями в Laravel",
     "type": "library",
     "license": "MIT",
