@@ -3,7 +3,6 @@
 namespace UserNotification;
 
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Foundation\Configuration\ApplicationBuilder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
 use UserNotification\Services\NotificationPreferencesService;
@@ -40,9 +39,6 @@ class UserNotificationServiceProvider extends ServiceProvider
         );
 
         $this->offerPublishing();
-        
-        // Автоматически регистрируем провайдер в bootstrap/providers.php (Laravel 11+)
-        $this->registerProviderInBootstrap();
 
         // Регистрируем команды
         if ($this->app->runningInConsole()) {
@@ -140,28 +136,5 @@ class UserNotificationServiceProvider extends ServiceProvider
             ->first();
     }
 
-    /**
-     * Автоматически регистрирует App\Providers\UserNotificationServiceProvider в bootstrap/providers.php
-     * Аналогично тому, как это делает Laravel Nova
-     */
-    protected function registerProviderInBootstrap(): void
-    {
-        if (! $this->app->runningInConsole()) {
-            return;
-        }
-
-        $files = $this->app->make(Filesystem::class);
-        $providerPath = app_path('Providers/UserNotificationServiceProvider.php');
-        $appNamespace = $this->app->getNamespace();
-
-        // Проверяем Laravel 11+ и наличие опубликованного провайдера
-        if (class_exists(ApplicationBuilder::class) 
-            && $files->exists(base_path('bootstrap/providers.php'))
-            && $files->exists($providerPath)
-            && method_exists(ServiceProvider::class, 'addProviderToBootstrapFile')) {
-            
-            ServiceProvider::addProviderToBootstrapFile("{$appNamespace}Providers\\UserNotificationServiceProvider");
-        }
-    }
 
 }
