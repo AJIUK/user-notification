@@ -19,9 +19,7 @@ class UserNotificationLine
 
     public function format(): string
     {
-        // Используем стандартную локализацию Laravel
-        // Laravel автоматически подставит значения через :param или {param}
-        return __($this->template, $this->values);
+        return sprintf(__($this->template), $this->values);
     }
 
     function escapeMarkdown(?string $text, ?string $default = null): ?string
