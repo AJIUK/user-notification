@@ -3,6 +3,7 @@
 namespace UserNotification\Services;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use UserNotification\Contracts\NotifiableUser;
 use UserNotification\Contracts\NotificationChannelEnum;
 use UserNotification\Contracts\NotificationTypeEnum;
@@ -86,18 +87,17 @@ class NotificationPreferencesService
      */
     public function setNotificationPreferences(NotifiableUser $user, array $preferences): void
     {
-        foreach ($preferences as $preference) {
-            UserNotificationPreference::updateOrCreate(
-                [
-                    'user_id' => $user->getKey(),
-                    'type' => $preference['type'],
-                    'channel' => $preference['channel'],
-                ],
-                [
-                    'is_active' => $preference['is_active'] ?? true,
-                ]
-            );
-        }
+        $preferencesTable = config('user-notification.preferences_table', 'user_notification_preferences');
+
+        $delQuery = DB::table($preferencesTable)->where('user_id', $user->getKey());
+        $delQuery->delete();
+
+        $preferences = array_map(function ($item) use ($user) {
+            $item['user_id'] = $user->getKey();
+            return $item;
+        }, $preferences);
+
+        DB::table($preferencesTable)->insert($preferences);
     }
 
 }
