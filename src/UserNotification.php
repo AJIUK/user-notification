@@ -13,6 +13,7 @@ use UserNotification\Contracts\NotificationChannelEnum;
 use UserNotification\Services\NotificationPreferencesService;
 use UserNotification\Contracts\NotificationTypeEnum;
 use UserNotification\Support\UserNotificationLayout;
+use UserNotification\Support\UserNotificationLine;
 use UserNotification\Support\UserNotificationLines;
 use UserNotification\Support\UserNotificationTestList;
 
@@ -194,17 +195,17 @@ abstract class UserNotification extends Notification implements ShouldQueue
      * Тема письма
      * Используется как заголовок, если не переопределить getTitle
      * Возвращает ключ локализации или переведенную строку
-     * @return string
+     * @return UserNotificationLine
      */
-    abstract public function getSubject(NotifiableUser $user): string;
+    abstract public function getSubject(NotifiableUser $user): UserNotificationLine;
 
     /**
      * Заголовок письма
      * По-умолчанию используется тема из getSubject
      * Возвращает ключ локализации или переведенную строку
-     * @return string|null
+     * @return UserNotificationLine|null
      */
-    public function getTitle(NotifiableUser $user): ?string
+    public function getTitle(NotifiableUser $user): ?UserNotificationLine
     {
         return $this->getSubject($user);
     }

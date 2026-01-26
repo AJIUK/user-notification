@@ -29,7 +29,7 @@ class MailChannel extends \Illuminate\Notifications\Channels\MailChannel impleme
         );
 
         return new UserNotificationMarkdown("user-notification::emails.user-notification", [
-            'title' => $notification->getTitle($user),
+            'title' => $notification->getTitle($user)->format(),
             'layout' => $layout,
         ]);
     }
@@ -57,7 +57,7 @@ class MailChannel extends \Illuminate\Notifications\Channels\MailChannel impleme
         $markdown = $this->getMarkdown($notification, $notifiable);
 
         $message = (new MailMessage())
-            ->subject(__($notification->getSubject($notifiable)))
+            ->subject($notification->getSubject($notifiable)->format())
             ->markdown($markdown->view, $markdown->data);
 
         $notification->setToMail($message);

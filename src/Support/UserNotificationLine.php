@@ -19,7 +19,7 @@ class UserNotificationLine
 
     public function format(): string
     {
-        return sprintf(__($this->template), ...$this->values);
+        return __($this->template, $this->values);
     }
 
     function escapeMarkdown(?string $text, ?string $default = null): ?string
