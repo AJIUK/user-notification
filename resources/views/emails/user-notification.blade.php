@@ -5,7 +5,7 @@ use UserNotification\Support\UserNotificationLines;
 
 @component('mail::message')
 @if (!empty($title))
-# {{ __($title) }}
+# {{ $title->format() }}
 @endif
 
 @foreach ($layout->items() as $item)
