@@ -180,6 +180,7 @@ use UserNotification\Contracts\NotifiableUser;
 use UserNotification\Support\UserNotificationAction;
 use UserNotification\Support\UserNotificationLayout;
 use UserNotification\Support\UserNotificationLines;
+use UserNotification\Support\UserNotificationLine;
 use UserNotification\Support\UserNotificationTest;
 use UserNotification\Support\UserNotificationTestList;
 use UserNotification\UserNotification;
@@ -195,10 +196,10 @@ class DealCreatedNotification extends UserNotification
         return UserNotificationType::DEAL_CREATED;
     }
 
-    public function getSubject(NotifiableUser $user): string
+    public function getSubject(NotifiableUser $user): UserNotificationLine
     {
-        // Возвращаем ключ локализации или переведенную строку
-        return 'notifications.deal_created.subject';
+        // Возвращаем UserNotificationLine с ключом локализации или переведенной строкой
+        return new UserNotificationLine('notifications.deal_created.subject');
     }
 
     public function getLayout(

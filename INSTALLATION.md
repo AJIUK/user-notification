@@ -207,6 +207,7 @@ use UserNotification\Contracts\NotificationTypeEnum;
 use UserNotification\Contracts\NotificationChannelEnum;
 use UserNotification\Support\UserNotificationLayout;
 use UserNotification\Support\UserNotificationLines;
+use UserNotification\Support\UserNotificationLine;
 
 class MyNotification extends UserNotification
 {
@@ -215,10 +216,10 @@ class MyNotification extends UserNotification
         return UserNotificationType::MY_TYPE;
     }
 
-    public function getSubject(NotifiableUser $user): string
+    public function getSubject(NotifiableUser $user): UserNotificationLine
     {
-        // Возвращаем ключ локализации или переведенную строку
-        return 'notifications.my_notification.subject';
+        // Возвращаем UserNotificationLine с ключом локализации или переведенной строкой
+        return new UserNotificationLine('notifications.my_notification.subject');
     }
 
     public function getLayout(

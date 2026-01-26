@@ -8,6 +8,7 @@ use UserNotification\Contracts\NotificationTypeEnum;
 use UserNotification\Contracts\NotificationChannelEnum;
 use UserNotification\Support\UserNotificationLayout;
 use UserNotification\Support\UserNotificationLines;
+use UserNotification\Support\UserNotificationLine;
 use UserNotification\Support\UserNotificationTestList;
 use UserNotification\Support\UserNotificationTest;
 use App\Enums\UserNotificationType;
@@ -29,11 +30,11 @@ class {{ class }} extends UserNotification
      * Возвращает ключ локализации или переведенную строку
      *
      * @param NotifiableUser $user
-     * @return string
+     * @return UserNotificationLine
      */
-    public function getSubject(NotifiableUser $user): string
+    public function getSubject(NotifiableUser $user): UserNotificationLine
     {
-        return 'notifications.{{ name }}.subject';
+        return new UserNotificationLine('notifications.{{ name }}.subject');
     }
 
     /**
@@ -42,9 +43,9 @@ class {{ class }} extends UserNotification
      * Можно переопределить для кастомного заголовка
      *
      * @param NotifiableUser $user
-     * @return string|null
+     * @return UserNotificationLine|null
      */
-    public function getTitle(NotifiableUser $user): ?string
+    public function getTitle(NotifiableUser $user): ?UserNotificationLine
     {
         return parent::getTitle($user);
     }

@@ -302,6 +302,7 @@ use UserNotification\Contracts\NotificationTypeEnum;
 use UserNotification\Contracts\NotifiableUser;
 use UserNotification\Support\UserNotificationLayout;
 use UserNotification\Support\UserNotificationLines;
+use UserNotification\Support\UserNotificationLine;
 use UserNotification\Support\UserNotificationTestList;
 use UserNotification\UserNotification;
 
@@ -316,10 +317,11 @@ class DealCreatedNotification extends UserNotification
         return UserNotificationType::DEAL_CREATED;
     }
 
-    public function getSubject(NotifiableUser $user): string
+    public function getSubject(NotifiableUser $user): UserNotificationLine
     {
-        // Возвращаем ключ локализации или переведенную строку
-        return 'notifications.deal_created.subject';
+        // Возвращаем UserNotificationLine с ключом локализации или переведенной строкой
+        // Можно передать параметры для локализации: new UserNotificationLine('notifications.deal_created.subject', ['id' => $this->deal->id])
+        return new UserNotificationLine('notifications.deal_created.subject');
     }
 
     public function getLayout(
@@ -585,10 +587,11 @@ read_file
 Пример использования в уведомлениях:
 
 ```php
-public function getSubject(NotifiableUser $user): string
+public function getSubject(NotifiableUser $user): UserNotificationLine
 {
-    // Возвращаем ключ локализации
-    return 'notifications.deal_created.subject';
+    // Возвращаем UserNotificationLine с ключом локализации или переведенной строкой
+    // Можно передать параметры для локализации: new UserNotificationLine('notifications.deal_created.subject', ['id' => $this->deal->id])
+    return new UserNotificationLine('notifications.deal_created.subject');
 }
 
 public function getLayout(NotifiableUser $user, NotificationChannelEnum $channel): UserNotificationLayout
