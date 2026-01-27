@@ -14,12 +14,12 @@ use UserNotification\Support\UserNotificationLines;
 @component($item->component->value)
 @if($item->glue)
 
-{!! implode('<br>', array_map(fn($line) => $line->format(), $item->all())) !!}
+{!! implode("<br/>", array_map(fn($line) => nl2br($line->format()), $item->all())) !!}
 
 @else
 @foreach ($item->lines() as $line)
 
-{{ $line->format() }}
+{!! nl2br($line->format()) !!}
 
 @endforeach
 @endif
@@ -27,12 +27,12 @@ use UserNotification\Support\UserNotificationLines;
 @else
 @if($item->glue)
 
-{!! implode('<br>', array_map(fn($line) => $line->format(), $item->all())) !!}
+{!! implode("<br/>", array_map(fn($line) => nl2br($line->format()), $item->all())) !!}
 
 @else
 @foreach ($item->lines() as $line)
 
-{{ $line->format() }}
+{!! nl2br($line->format()) !!}
 
 @endforeach
 @endif
