@@ -9,7 +9,7 @@ class UserNotificationAction
     use ChannelVisibilityControl;
 
     public function __construct(
-        public string $text,
+        public UserNotificationLine $text,
         public string $url,
     ) {}
 }

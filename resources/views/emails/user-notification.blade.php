@@ -39,7 +39,7 @@ use UserNotification\Support\UserNotificationLines;
 @endif
 @elseif ($item instanceof UserNotificationAction)
 @component('mail::button', ['url' => $item->url])
-{{ __($item->text) }}
+{{ $item->text->format() }}
 @endcomponent
 @endif
 @endforeach
