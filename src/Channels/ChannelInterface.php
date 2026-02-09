@@ -19,4 +19,12 @@ interface ChannelInterface
      * @return void
      */
     public function send(NotifiableUser $notifiable, UserNotification $notification): void;
+
+    /**
+     * Получить middleware для канала
+     *
+     * @param NotifiableUser $notifiable
+     * @return array
+     */
+    public function middleware(NotifiableUser $notifiable): array;
 }
