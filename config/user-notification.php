@@ -44,4 +44,15 @@ return [
     |
     */
     'type_enum' => env('USER_NOTIFICATION_TYPE_ENUM', 'App\\Enums\\UserNotificationType'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Default Queue
+    |--------------------------------------------------------------------------
+    |
+    | Укажите очередь по умолчанию для уведомлений.
+    | По умолчанию используется 'default'
+    |
+    */
+    'default_queue' => env('USER_NOTIFICATION_DEFAULT_QUEUE', 'default'),
 ];

@@ -2,7 +2,7 @@
 
 namespace UserNotification\Contracts;
 
-use UserNotification\Channels\ChannelInterface;
+use UserNotification\Channels\BaseChannel;
 
 /**
  * Интерфейс для enum каналов уведомлений
@@ -12,9 +12,9 @@ interface NotificationChannelEnum
 {
     /**
      * Получить экземпляр канала для данного enum
-     * @return ChannelInterface
+     * @return BaseChannel
      */
-    public function getChannel(): ChannelInterface;
+    public function getChannel(): BaseChannel;
 
     /**
      * Получить имя класса канала для данного enum

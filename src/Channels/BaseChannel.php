@@ -9,7 +9,7 @@ use UserNotification\UserNotification;
  * Интерфейс для каналов уведомлений
  * Соответствует стандартному интерфейсу Laravel NotificationChannel
  */
-interface ChannelInterface
+abstract class BaseChannel
 {
     /**
      * Отправить уведомление через канал
@@ -18,7 +18,7 @@ interface ChannelInterface
      * @param UserNotification $notification
      * @return void
      */
-    public function send(NotifiableUser $notifiable, UserNotification $notification): void;
+    abstract public function send(NotifiableUser $notifiable, UserNotification $notification): void;
 
     /**
      * Получить middleware для канала
@@ -26,12 +26,18 @@ interface ChannelInterface
      * @param NotifiableUser $notifiable
      * @return array
      */
-    public function middleware(NotifiableUser $notifiable): array;
+    public function middleware(NotifiableUser $notifiable)
+    {
+        return [];
+    }
 
     /**
      * Получить очередь для канала
      *
      * @return string
      */
-    public function queue(): string;
+    public function queue(): string
+    {
+        return config('user-notification.default_queue', 'default');
+    }
 }

@@ -7,7 +7,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\App;
-use UserNotification\Channels\ChannelInterface;
+use UserNotification\Channels\BaseChannel;
 use UserNotification\Contracts\HasLogEvent;
 use UserNotification\Contracts\NotifiableUser;
 use UserNotification\Contracts\NotificationChannelEnum;
@@ -255,7 +255,7 @@ abstract class UserNotification extends Notification implements ShouldQueue
     {
         $manager = app(\Illuminate\Notifications\ChannelManager::class);
         $channelInstance = $manager->driver($channel);
-        if ($channelInstance instanceof ChannelInterface) {
+        if ($channelInstance instanceof BaseChannel) {
             return $channelInstance->middleware($notifiable);
         }
         return [];
@@ -267,7 +267,7 @@ abstract class UserNotification extends Notification implements ShouldQueue
         $channels = $manager->getDrivers();
         $queues = [];
         foreach ($channels as $channel => $channelInstance) {
-            if ($channelInstance instanceof ChannelInterface) {
+            if ($channelInstance instanceof BaseChannel) {
                 $queues[$channel] = $channelInstance->queue();
             }
         }
