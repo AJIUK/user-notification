@@ -27,4 +27,11 @@ interface ChannelInterface
      * @return array
      */
     public function middleware(NotifiableUser $notifiable): array;
+
+    /**
+     * Получить очередь для канала
+     *
+     * @return string
+     */
+    public function queue(): string;
 }

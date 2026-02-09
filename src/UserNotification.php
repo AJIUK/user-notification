@@ -260,4 +260,17 @@ abstract class UserNotification extends Notification implements ShouldQueue
         }
         return [];
     }
+
+    public function viaQueues(): array
+    {
+        $manager = app(\Illuminate\Notifications\ChannelManager::class);
+        $channels = $manager->getDrivers();
+        $queues = [];
+        foreach ($channels as $channel => $channelInstance) {
+            if ($channelInstance instanceof ChannelInterface) {
+                $queues[$channel] = $channelInstance->queue();
+            }
+        }
+        return $queues;
+    }
 }
