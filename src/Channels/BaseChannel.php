@@ -34,7 +34,6 @@ abstract class BaseChannel
     /**
      * Получить очередь для канала
      * По умолчанию используется очередь из конфига user-notification.default_queue
-     * Если нужно отключить очередь, то нужно вернуть null
      *
      * @return ?string
      */
