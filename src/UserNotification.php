@@ -268,7 +268,9 @@ abstract class UserNotification extends Notification implements ShouldQueue
         $queues = [];
         foreach ($channels as $channel => $channelInstance) {
             if ($channelInstance instanceof BaseChannel) {
-                $queues[$channel] = $channelInstance->queue();
+                if (!empty($channelInstance->queue())) {
+                    $queues[$channel] = $channelInstance->queue();
+                }
             }
         }
         return $queues;
