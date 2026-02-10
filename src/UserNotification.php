@@ -3,6 +3,7 @@
 namespace UserNotification;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\App;
@@ -16,7 +17,7 @@ use UserNotification\Support\UserNotificationLayout;
 use UserNotification\Support\UserNotificationLine;
 use UserNotification\Support\UserNotificationTestList;
 
-abstract class UserNotification extends Notification
+abstract class UserNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
