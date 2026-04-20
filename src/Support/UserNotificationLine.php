@@ -10,7 +10,8 @@ class UserNotificationLine
 
     public function __construct(
         public string $template,
-        public array $values = []
+        public array $values = [],
+        public int $count = 1
     ) {
         foreach ($values as &$value) {
             $value = $this->escapeMarkdown($value);
@@ -19,7 +20,7 @@ class UserNotificationLine
 
     public function format(): string
     {
-        return __($this->template, $this->values);
+        return trans_choice($this->template, $this->count, $this->values);
     }
 
     function escapeMarkdown(?string $text, ?string $default = null): ?string
