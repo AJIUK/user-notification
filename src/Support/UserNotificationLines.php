@@ -18,9 +18,9 @@ class UserNotificationLines
         $this->lines = new Collection();
     }
 
-    public function add(string $template, array $values = []): self
+    public function add(string $template, array $values = [], int $count = 1): self
     {
-        return $this->addLine(new UserNotificationLine($template, $values));
+        return $this->addLine(new UserNotificationLine($template, $values, $count));
     }
 
     public function addLine(UserNotificationLine $line): self
