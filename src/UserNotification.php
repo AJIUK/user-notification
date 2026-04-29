@@ -98,15 +98,16 @@ abstract class UserNotification extends Notification implements ShouldQueue
 
     final public function getViaChannels(NotifiableUser $user): array
     {
+        if ($this->isImportant()) {
+            $manager = app(\Illuminate\Notifications\ChannelManager::class);
+            $channels = $manager->getDrivers();
+            return $channels;
+        }
+
         $channels = $this->getChannels($user);
 
         if (!is_null($channels)) {
             return $channels;
-        }
-
-        if ($this->isImportant()) {
-            // TODO: продумать логику important уведомлений
-            // TODO: по-сути они должны слаться во все каналы, игнорируя настройки пользователя
         }
 
         $preferencesService = self::$preferencesService ?? app(NotificationPreferencesService::class);
