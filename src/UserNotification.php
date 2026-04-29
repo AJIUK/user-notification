@@ -98,12 +98,6 @@ abstract class UserNotification extends Notification implements ShouldQueue
 
     final public function getViaChannels(NotifiableUser $user): array
     {
-        if ($this->isImportant()) {
-            return array_map(function($channel) {
-                return $channel->getChannelClassName();
-            }, $user->getAvailableChannels());
-        }
-
         $channels = $this->getChannels($user);
 
         if (!is_null($channels)) {
