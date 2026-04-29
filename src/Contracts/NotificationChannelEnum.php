@@ -26,4 +26,6 @@ interface NotificationChannelEnum
 
     public function getValue();
     public function getName(): string;
+
+    public function getMeta(mixed ...$args): ?array;
 }

@@ -41,4 +41,14 @@ abstract class BaseChannel
     {
         return config('user-notification.default_queue', 'default');
     }
+
+    /**
+     * Получить метаданные для канала
+     *
+     * @return ?array
+     */
+    public function getMeta(mixed ...$args): ?array
+    {
+        return null;
+    }
 }
