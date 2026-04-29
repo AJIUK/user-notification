@@ -31,10 +31,4 @@ interface NotifiableUser
      * @return mixed
      */
     public function getKey();
-
-    /**
-     * Получить доступные каналы для уведомлений
-     * @return array
-     */
-    public function getAvailableChannels(): array;
 }

@@ -21,6 +21,14 @@ abstract class BaseChannel
     abstract public function send(NotifiableUser $notifiable, UserNotification $notification): void;
 
     /**
+     * Проверить доступность канала для пользователя
+     *
+     * @param NotifiableUser $notifiable
+     * @return bool
+     */
+    abstract public function isAvailable(NotifiableUser $notifiable): bool;
+
+    /**
      * Получить middleware для канала
      *
      * @param NotifiableUser $notifiable
