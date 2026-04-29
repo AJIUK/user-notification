@@ -99,9 +99,9 @@ abstract class UserNotification extends Notification implements ShouldQueue
     final public function getViaChannels(NotifiableUser $user): array
     {
         if ($this->isImportant()) {
-            $manager = app(\Illuminate\Notifications\ChannelManager::class);
-            $channels = $manager->getDrivers();
-            return $channels;
+            return array_map(function($channel) {
+                return $channel->getChannelClassName();
+            }, $user->getAvailableChannels());
         }
 
         $channels = $this->getChannels($user);
