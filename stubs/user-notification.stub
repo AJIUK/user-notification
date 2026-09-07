@@ -108,4 +108,28 @@ class {{ class }} extends UserNotification
     {
         return null;
     }
+
+    /**
+     * Каналы, которые будут исключены из отправки
+     * Игнорируются даже если они активны в настройках пользователя
+     *
+     * @param NotifiableUser $user
+     * @return array
+     */
+    public function ignoredChannels(NotifiableUser $user): array
+    {
+        return [];
+    }
+
+    /**
+     * Строго ограничиваем список каналов
+     * Возвращает null, если ограничение не нужно
+     *
+     * @param NotifiableUser $user
+     * @return array|null
+     */
+    public function onlyChannels(NotifiableUser $user): ?array
+    {
+        return null;
+    }
 }

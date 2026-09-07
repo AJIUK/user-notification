@@ -100,22 +100,20 @@ abstract class UserNotification extends Notification implements ShouldQueue
     {
         $channels = $this->getChannels($user);
 
-        if (!is_null($channels)) {
-            return $channels;
+        if (is_null($channels)) {
+            $preferencesService = self::$preferencesService ?? app(NotificationPreferencesService::class);
+
+            $preferences = $preferencesService->getNotificationPreferences($user, $this->getNotificationType(), null);
+            $channelEnums = $preferences->where('is_active', true)->pluck('channel')->unique()->values();
+            $channels = $channelEnums->map(function($channelEnum) {
+                if (!$channelEnum instanceof NotificationChannelEnum) {
+                    return null;
+                }
+                return $channelEnum->getChannelClassName();
+            })->filter()->values()->all();
         }
 
-        $preferencesService = self::$preferencesService ?? app(NotificationPreferencesService::class);
-
-        $preferences = $preferencesService->getNotificationPreferences($user, $this->getNotificationType(), null);
-        $channelEnums = $preferences->where('is_active', true)->pluck('channel')->unique()->values();
-        $channels = $channelEnums->map(function($channelEnum) {
-            if (!$channelEnum instanceof NotificationChannelEnum) {
-                return null;
-            }
-            return $channelEnum->getChannelClassName();
-        })->filter()->values();
-
-        return $channels->all();
+        return $this->applyChannelConstraints($user, $channels);
     }
 
     /**
@@ -178,6 +176,71 @@ abstract class UserNotification extends Notification implements ShouldQueue
     public function defaultChannels(NotifiableUser $user): ?array
     {
         return null;
+    }
+
+    /**
+     * Каналы, которые будут исключены из отправки
+     * Игнорируются даже если они активны в настройках пользователя
+     * @return array<int, class-string|NotificationChannelEnum>
+     */
+    public function ignoredChannels(NotifiableUser $user): array
+    {
+        return [];
+    }
+
+    /**
+     * Строго ограничиваем список каналов
+     * Если вернуть массив, уведомление уйдёт только в пересечение с этим списком
+     * Значение null означает, что ограничение не применяется
+     * @return ?array<int, class-string|NotificationChannelEnum>
+     */
+    public function onlyChannels(NotifiableUser $user): ?array
+    {
+        return null;
+    }
+
+    /**
+     * Применяем белый список и игнорируемые каналы к итоговому списку
+     * @param array<int, class-string> $channels
+     * @return array<int, class-string>
+     */
+    private function applyChannelConstraints(NotifiableUser $user, array $channels): array
+    {
+        $channels = $this->normalizeChannelClassNames($channels);
+
+        $onlyChannels = $this->onlyChannels($user);
+        if (!is_null($onlyChannels)) {
+            $channels = array_values(array_intersect($channels, $this->normalizeChannelClassNames($onlyChannels)));
+        }
+
+        $ignoredChannels = $this->ignoredChannels($user);
+        if ($ignoredChannels !== []) {
+            $channels = array_values(array_diff($channels, $this->normalizeChannelClassNames($ignoredChannels)));
+        }
+
+        return $channels;
+    }
+
+    /**
+     * @param array<int, class-string|NotificationChannelEnum> $channels
+     * @return array<int, class-string>
+     */
+    private function normalizeChannelClassNames(array $channels): array
+    {
+        $normalized = [];
+
+        foreach ($channels as $channel) {
+            if ($channel instanceof NotificationChannelEnum) {
+                $normalized[] = $channel->getChannelClassName();
+                continue;
+            }
+
+            if (is_string($channel) && $channel !== '') {
+                $normalized[] = $channel;
+            }
+        }
+
+        return array_values(array_unique($normalized));
     }
 
     /**
