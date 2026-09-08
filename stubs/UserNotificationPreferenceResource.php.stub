@@ -19,11 +19,16 @@ class UserNotificationPreferenceResource extends JsonResource
     public function toArray(Request $request): array
     {
         /** @var UserNotificationPreference $this */
+        $user = $request->user();
+        $channel = $this->channel;
+
         return [
             'type' => $this->type->getValue(),
-            'channel' => $this->channel->getValue(),
+            'channel' => $channel->getValue(),
             'is_active' => $this->is_active,
-            'is_editable' => !$this->type->isChannelReadonly($this->channel),
+            'is_editable' => !$this->type->isChannelReadonly($channel),
+            'is_hidden' => $this->type->isChannelHidden($channel),
+            'is_connected' => $user ? $channel->getChannel()->isAvailable($user) : null,
         ];
     }
 }

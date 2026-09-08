@@ -19,11 +19,15 @@ class UserNotificationChannelResource extends JsonResource
     public function toArray(Request $request): array
     {
         /** @var NotificationChannelEnum $this */
+        $user = $request->user();
+
         return [
             'id' => $this->getValue(),
             'code' => $this->getName(),
             'title' => $this->getTitle(),
             'sort' => $this->getSort(),
+            'is_hidden' => $this->isHidden(),
+            'is_connected' => $user ? $this->getChannel()->isAvailable($user) : null,
         ];
     }
 }
