@@ -33,16 +33,10 @@ interface NotificationChannelEnum
      * Скрытый канал не показывается в настройках пользователя
      * и не может быть изменён через userPreferences
      */
-    public function isHidden(): bool
-    {
-        return false;
-    }
+    public function isHidden(): bool;
 
     /**
      * Порядок канала в словарях и настройках
      */
-    public function getSort(): int
-    {
-        return 0;
-    }
+    public function getSort(): int;
 }

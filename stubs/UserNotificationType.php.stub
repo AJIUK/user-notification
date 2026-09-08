@@ -3,9 +3,12 @@
 namespace App\Enums;
 
 use UserNotification\Contracts\NotificationTypeEnum;
+use UserNotification\Support\NotificationTypeDefaults;
 
 enum UserNotificationType: int implements NotificationTypeEnum
 {
+    use NotificationTypeDefaults;
+
     case SYSTEM = 10;
     // Добавьте свои типы уведомлений здесь
 
@@ -39,29 +42,5 @@ enum UserNotificationType: int implements NotificationTypeEnum
     public function getName(): string
     {
         return $this->name;
-    }
-
-    /**
-     * Порядок типа в словарях и настройках
-     */
-    public function getSort(): int
-    {
-        return 0;
-    }
-
-    /**
-     * Каналы, скрытые только для этого типа
-     */
-    public function getHiddenChannels(): array
-    {
-        return [];
-    }
-
-    /**
-     * Каналы, которые видны, но пользователь не может их изменить
-     */
-    public function getReadonlyChannels(): array
-    {
-        return [];
     }
 }

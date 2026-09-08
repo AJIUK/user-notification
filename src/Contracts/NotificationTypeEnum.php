@@ -17,45 +17,29 @@ interface NotificationTypeEnum
     /**
      * Порядок типа в словарях и настройках
      */
-    public function getSort(): int
-    {
-        return 0;
-    }
+    public function getSort(): int;
 
     /**
      * Каналы, скрытые только для этого типа уведомлений
      * Глобально скрытые каналы задаются через NotificationChannelEnum::isHidden
      * @return array<int, NotificationChannelEnum>
      */
-    public function getHiddenChannels(): array
-    {
-        return [];
-    }
+    public function getHiddenChannels(): array;
 
     /**
      * Каналы, которые видны в настройках, но пользователь не может их изменить
      * Скрытые каналы тоже считаются нередактируемыми
      * @return array<int, NotificationChannelEnum>
      */
-    public function getReadonlyChannels(): array
-    {
-        return [];
-    }
+    public function getReadonlyChannels(): array;
 
     /**
      * Канал скрыт глобально или только для этого типа
      */
-    public function isChannelHidden(NotificationChannelEnum $channel): bool
-    {
-        return $channel->isHidden() || in_array($channel, $this->getHiddenChannels(), true);
-    }
+    public function isChannelHidden(NotificationChannelEnum $channel): bool;
 
     /**
      * Канал нельзя изменить: он скрыт или входит в getReadonlyChannels
      */
-    public function isChannelReadonly(NotificationChannelEnum $channel): bool
-    {
-        return $this->isChannelHidden($channel)
-            || in_array($channel, $this->getReadonlyChannels(), true);
-    }
+    public function isChannelReadonly(NotificationChannelEnum $channel): bool;
 }
