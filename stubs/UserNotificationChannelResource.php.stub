@@ -27,7 +27,7 @@ class UserNotificationChannelResource extends JsonResource
             'title' => $this->getTitle(),
             'sort' => $this->getSort(),
             'is_hidden' => $this->isHidden(),
-            'is_connected' => $user ? $this->getChannel()->isAvailable($user) : null,
+            'is_active' => $user ? $this->getChannel()->isAvailable($user) : null,
         ];
     }
 }
