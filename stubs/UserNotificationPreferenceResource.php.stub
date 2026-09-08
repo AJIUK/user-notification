@@ -23,6 +23,7 @@ class UserNotificationPreferenceResource extends JsonResource
             'type' => $this->type->getValue(),
             'channel' => $this->channel->getValue(),
             'is_active' => $this->is_active,
+            'is_editable' => !$this->type->isChannelReadonly($this->channel),
         ];
     }
 }

@@ -63,7 +63,9 @@ class NotificationRegistry
     public static function getTypes(): Collection
     {
         self::init();
-        return self::$types;
+        return self::$types
+            ->sortBy(fn (NotificationTypeEnum $type) => [$type->getSort(), $type->getValue()])
+            ->values();
     }
 
     /**
@@ -73,7 +75,9 @@ class NotificationRegistry
     public static function getChannels(): Collection
     {
         self::init();
-        return self::$channels;
+        return self::$channels
+            ->sortBy(fn (NotificationChannelEnum $channel) => [$channel->getSort(), $channel->getValue()])
+            ->values();
     }
 
     /**

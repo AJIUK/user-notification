@@ -23,6 +23,7 @@ class UserNotificationChannelResource extends JsonResource
             'id' => $this->getValue(),
             'code' => $this->getName(),
             'title' => $this->getTitle(),
+            'sort' => $this->getSort(),
         ];
     }
 }

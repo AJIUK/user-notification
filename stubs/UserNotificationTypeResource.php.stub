@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use UserNotification\Contracts\NotificationChannelEnum;
 use UserNotification\Contracts\NotificationTypeEnum;
 
 /**
@@ -24,7 +25,27 @@ class UserNotificationTypeResource extends JsonResource
             'code' => $this->getName(),
             'title' => $this->getTitle(),
             'description' => $this->getDescription(),
-            'default_channels' => $this->getDefaultChannels(),
+            'sort' => $this->getSort(),
+            'default_channels' => $this->channelValues(
+                array_filter(
+                    $this->getDefaultChannels(),
+                    fn ($channel) => !$this->isChannelHidden($channel)
+                )
+            ),
+            'readonly_channels' => $this->channelValues($this->getReadonlyChannels()),
+            'hidden_channels' => $this->channelValues($this->getHiddenChannels()),
         ];
+    }
+
+    /**
+     * @param array<int, mixed> $channels
+     * @return array<int, mixed>
+     */
+    private function channelValues(array $channels): array
+    {
+        return array_values(array_map(
+            fn ($channel) => $channel instanceof NotificationChannelEnum ? $channel->getValue() : $channel,
+            $channels
+        ));
     }
 }

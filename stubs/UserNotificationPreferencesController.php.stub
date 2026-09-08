@@ -34,7 +34,10 @@ class UserNotificationPreferencesController extends Controller
      */
     public function getNotificationPreferences(Request $request): AnonymousResourceCollection
     {
-        $preferences = $this->preferencesService->getNotificationPreferences(request()->user());
+        $preferences = $this->preferencesService->getNotificationPreferences(
+            request()->user(),
+            includeHidden: false,
+        );
 
         return UserNotificationPreferenceResource::collection($preferences);
     }
@@ -48,7 +51,9 @@ class UserNotificationPreferencesController extends Controller
     public function getNotificationDictionaries(Request $request): JsonResponse
     {
         $types = NotificationRegistry::getTypes();
-        $channels = NotificationRegistry::getChannels();
+        $channels = NotificationRegistry::getChannels()->filter(
+            fn ($channel) => !$channel->isHidden()
+        );
 
         return response()->json([
             'notification_types' => UserNotificationTypeResource::collection($types),

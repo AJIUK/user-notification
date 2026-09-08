@@ -28,4 +28,21 @@ interface NotificationChannelEnum
     public function getName(): string;
 
     public function getMeta(mixed ...$args): ?array;
+
+    /**
+     * Скрытый канал не показывается в настройках пользователя
+     * и не может быть изменён через userPreferences
+     */
+    public function isHidden(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Порядок канала в словарях и настройках
+     */
+    public function getSort(): int
+    {
+        return 0;
+    }
 }

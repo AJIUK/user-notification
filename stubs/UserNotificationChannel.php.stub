@@ -48,4 +48,17 @@ enum UserNotificationChannel: int implements NotificationChannelEnum
     {
         return $this->name;
     }
+
+    public function isHidden(): bool
+    {
+        return false;
+    }
+
+    /**
+     * Порядок канала в словарях и настройках
+     */
+    public function getSort(): int
+    {
+        return 0;
+    }
 }
