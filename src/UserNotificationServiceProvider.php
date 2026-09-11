@@ -32,6 +32,7 @@ class UserNotificationServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->loadTranslationsFrom(__DIR__.'/../lang', 'user-notification');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'user-notification');
 
         // Устанавливаем сервис в UserNotification после того, как все сервисы зарегистрированы
         UserNotification::setPreferencesService(
@@ -116,9 +117,6 @@ class UserNotificationServiceProvider extends ServiceProvider
             __DIR__.'/../stubs/UserNotificationChannelResource.php.stub' => app_path('Http/Resources/UserNotificationChannelResource.php'),
             __DIR__.'/../stubs/UpdateUserNotificationPreferencesRequest.php.stub' => app_path('Http/Requests/UpdateUserNotificationPreferencesRequest.php'),
         ], 'user-notification');
-
-        // Загружаем views из библиотеки
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'user-notification');
     }
 
     /**
