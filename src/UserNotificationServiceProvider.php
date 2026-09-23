@@ -5,6 +5,8 @@ namespace UserNotification;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\ServiceProvider;
+use UserNotification\Services\NotificationDeliveryLogger;
+use UserNotification\Services\NotificationMailingService;
 use UserNotification\Services\NotificationPreferencesService;
 
 class UserNotificationServiceProvider extends ServiceProvider
@@ -19,10 +21,17 @@ class UserNotificationServiceProvider extends ServiceProvider
             'user-notification'
         );
 
-        // Регистрируем NotificationPreferencesService
         // Пользователь может переопределить, зарегистрировав свой класс в AppServiceProvider
         if (!$this->app->bound(NotificationPreferencesService::class)) {
             $this->app->singleton(NotificationPreferencesService::class);
+        }
+
+        if (!$this->app->bound(NotificationDeliveryLogger::class)) {
+            $this->app->singleton(NotificationDeliveryLogger::class);
+        }
+
+        if (!$this->app->bound(NotificationMailingService::class)) {
+            $this->app->singleton(NotificationMailingService::class);
         }
     }
 
@@ -70,6 +79,8 @@ class UserNotificationServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../database/migrations/create_user_notification_preferences_table.php.stub' =>
                 $this->getMigrationFileName('create_user_notification_preferences_table.php'),
+            __DIR__.'/../database/migrations/create_user_notification_logs_table.php.stub' =>
+                $this->getMigrationFileName('create_user_notification_logs_table.php'),
         ], 'user-notification-migrations');
 
         $this->publishes([
@@ -105,6 +116,8 @@ class UserNotificationServiceProvider extends ServiceProvider
             __DIR__.'/../config/user-notification.php' => config_path('user-notification.php'),
             __DIR__.'/../database/migrations/create_user_notification_preferences_table.php.stub' =>
                 $this->getMigrationFileName('create_user_notification_preferences_table.php'),
+            __DIR__.'/../database/migrations/create_user_notification_logs_table.php.stub' =>
+                $this->getMigrationFileName('create_user_notification_logs_table.php'),
             __DIR__.'/../resources/views' => resource_path('views/vendor/user-notification'),
             __DIR__.'/../lang' => $this->app->langPath('vendor/user-notification'),
             __DIR__.'/../stubs/MailChannel.php.stub' => app_path('Notifications/Channels/MailChannel.php'),

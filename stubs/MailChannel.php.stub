@@ -2,50 +2,50 @@
 
 namespace App\Notifications\Channels;
 
+use App\Enums\UserNotificationChannel;
 use Illuminate\Notifications\Messages\MailMessage;
-use UserNotification\Channels\ChannelInterface;
+use UserNotification\Channels\BaseChannel;
 use UserNotification\Contracts\NotifiableUser;
 use UserNotification\Support\UserNotificationLines;
 use UserNotification\Support\UserNotificationMarkdown;
 use UserNotification\UserNotification;
 use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Channels\MailChannel as ParentMailChannel;
 
-class MailChannel extends \Illuminate\Notifications\Channels\MailChannel implements ChannelInterface
+class MailChannel extends BaseChannel
 {
+    public function __construct(
+        protected ParentMailChannel $mailChannel
+    ) {
+        //
+    }
+
+    public function isAvailable(NotifiableUser $notifiable): bool
+    {
+        return (bool) $notifiable->getNotificationEmail();
+    }
+
     /**
      * Получить Markdown для email-уведомления
-     * @return UserNotificationMarkdown
      */
     protected function getMarkdown(UserNotification $notification, NotifiableUser $user): UserNotificationMarkdown
     {
-        // Устанавливаем локаль пользователя
         $notification->setUserLocale($user);
 
         $layout = $notification->getLayout($user, UserNotificationChannel::MAIL);
-
         $layout->addLines((new UserNotificationLines())
             ->add('user-notification::notification.thank_you')
             ->add('user-notification::notification.your_team', ['team' => config('app.name', 'Team')])
         );
 
-        return new UserNotificationMarkdown("user-notification::emails.user-notification", [
-            'title' => $notification->getTitle($user)->format(),
+        return new UserNotificationMarkdown('user-notification::emails.user-notification', [
+            'title' => $notification->getTitle($user),
             'layout' => $layout,
         ]);
     }
 
-    /**
-     * Отправить уведомление через email канал
-     *
-     * Реализует ChannelInterface::send с совместимостью с родительским классом
-     *
-     * @param NotifiableUser|mixed $notifiable
-     * @param UserNotification|Notification $notification
-     * @return void
-     */
-    public function send($notifiable, Notification $notification): void
+    protected function deliver($notifiable, Notification $notification): void
     {
-        // Проверяем типы для использования специфичных методов
         if (!$notification instanceof UserNotification) {
             throw new \InvalidArgumentException('Notification must be instance of UserNotification');
         }
@@ -62,6 +62,6 @@ class MailChannel extends \Illuminate\Notifications\Channels\MailChannel impleme
 
         $notification->setToMail($message);
 
-        parent::send($notifiable, $notification);
+        $this->mailChannel->send($notifiable, $notification);
     }
 }

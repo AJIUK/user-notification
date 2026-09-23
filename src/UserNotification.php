@@ -11,6 +11,8 @@ use UserNotification\Channels\BaseChannel;
 use UserNotification\Contracts\HasLogEvent;
 use UserNotification\Contracts\NotifiableUser;
 use UserNotification\Contracts\NotificationChannelEnum;
+use UserNotification\Models\UserNotificationMailing;
+use UserNotification\Services\NotificationDeliveryLogger;
 use UserNotification\Services\NotificationPreferencesService;
 use UserNotification\Contracts\NotificationTypeEnum;
 use UserNotification\Support\UserNotificationLayout;
@@ -26,6 +28,16 @@ abstract class UserNotification extends Notification implements ShouldQueue
     private bool $_allowLogEvent = true;
     private bool $_isTest = false;
     private ?MailMessage $_toMail = null;
+
+    /**
+     * ID записи user_notification_logs (прокидывается в job'ы каналов).
+     */
+    public ?int $logId = null;
+
+    /**
+     * ID рассылки user_notification_mailings (если уведомление из рассылки).
+     */
+    public ?int $mailingId = null;
 
     /**
      * Получить сервис для работы с настройками уведомлений
@@ -93,7 +105,37 @@ abstract class UserNotification extends Notification implements ShouldQueue
             return [];
         }
 
+        if ($channels !== []) {
+            app(NotificationDeliveryLogger::class)->ensureLog($notifiable, $this, $channels);
+        }
+
         return $channels;
+    }
+
+    public function getLogId(): ?int
+    {
+        return $this->logId;
+    }
+
+    public function setLogId(?int $logId): static
+    {
+        $this->logId = $logId;
+
+        return $this;
+    }
+
+    public function getMailingId(): ?int
+    {
+        return $this->mailingId;
+    }
+
+    public function forMailing(UserNotificationMailing|int|null $mailing): static
+    {
+        $this->mailingId = $mailing instanceof UserNotificationMailing
+            ? $mailing->getKey()
+            : $mailing;
+
+        return $this;
     }
 
     final public function getViaChannels(NotifiableUser $user): array
