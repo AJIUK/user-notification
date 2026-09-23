@@ -203,9 +203,30 @@ class NotificationDeliveryLogger
 
     public function resolveChannelEnum(string $channelClassName): ?NotificationChannelEnum
     {
-        return NotificationRegistry::getChannels()->first(
+        $fromRegistry = NotificationRegistry::getChannels()->first(
             fn (NotificationChannelEnum $channel) => $channel->getChannelClassName() === $channelClassName
         );
+
+        if ($fromRegistry) {
+            return $fromRegistry;
+        }
+
+        // Fallback: если registry ещё не прогрет — ищем по channel_enum из конфига.
+        $enumClass = config('user-notification.channel_enum');
+        if (!is_string($enumClass) || !enum_exists($enumClass)) {
+            return null;
+        }
+
+        foreach ($enumClass::cases() as $case) {
+            if (!$case instanceof NotificationChannelEnum) {
+                continue;
+            }
+            if ($case->getChannelClassName() === $channelClassName) {
+                return $case;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -218,7 +239,7 @@ class NotificationDeliveryLogger
         }
 
         $log = UserNotificationLog::query()->find($notification->getLogId());
-        if (!$log?->mailing_id) {
+        if (!$log?->mailing_id || $log->notifiable_id === null) {
             return;
         }
 
