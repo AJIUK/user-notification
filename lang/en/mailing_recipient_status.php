@@ -2,7 +2,7 @@
 
 return [
     'pending' => 'Pending send',
-    'sending' => 'Calling notify…',
+    'sending' => 'Calling notify',
     'dispatched' => 'Waiting for channels',
     'completed' => 'Delivered',
     'partial' => 'Partially delivered',
