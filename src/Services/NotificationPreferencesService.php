@@ -2,6 +2,7 @@
 
 namespace UserNotification\Services;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use UserNotification\Contracts\NotifiableUser;
@@ -33,7 +34,7 @@ class NotificationPreferencesService
         bool $includeHidden = true,
     ): Collection {
         $query = UserNotificationPreference::query()
-            ->forUser($user->getKey());
+            ->forNotifiable($this->asModel($user));
 
         if ($notificationType) {
             $query->forType($notificationType->getValue());
@@ -68,7 +69,7 @@ class NotificationPreferencesService
                     $result->push($preferences[$key]);
                 } else {
                     $preference = new UserNotificationPreference([
-                        'user_id' => $user->getKey(),
+                        ...$this->notifiableAttributes($user),
                         'type' => $type->getValue(),
                         'channel' => $channel->getValue(),
                         'is_active' => in_array($channel, $type->getDefaultChannels(), true),
@@ -107,7 +108,7 @@ class NotificationPreferencesService
             }
 
             $preserved[$this->preferenceKey($type, $channel)] = [
-                'user_id' => $user->getKey(),
+                ...$this->notifiableAttributes($user),
                 'type' => $type->getValue(),
                 'channel' => $channel->getValue(),
                 'is_active' => (bool) $pref->is_active,
@@ -123,7 +124,7 @@ class NotificationPreferencesService
             }
 
             $editable[$this->preferenceKey($type, $channel)] = [
-                'user_id' => $user->getKey(),
+                ...$this->notifiableAttributes($user),
                 'type' => $type->getValue(),
                 'channel' => $channel->getValue(),
                 'is_active' => (bool) ($item['is_active'] ?? false),
@@ -132,11 +133,39 @@ class NotificationPreferencesService
 
         $toInsert = array_values($preserved + $editable);
 
-        DB::table($preferencesTable)->where('user_id', $user->getKey())->delete();
+        $owner = $this->notifiableAttributes($user);
+        DB::table($preferencesTable)
+            ->where('notifiable_type', $owner['notifiable_type'])
+            ->where('notifiable_id', $owner['notifiable_id'])
+            ->delete();
 
         if ($toInsert !== []) {
             DB::table($preferencesTable)->insert($toInsert);
         }
+    }
+
+    /**
+     * @return array{notifiable_type: string, notifiable_id: mixed}
+     */
+    protected function notifiableAttributes(NotifiableUser $user): array
+    {
+        $model = $this->asModel($user);
+
+        return [
+            'notifiable_type' => $model->getMorphClass(),
+            'notifiable_id' => $model->getKey(),
+        ];
+    }
+
+    protected function asModel(NotifiableUser $user): Model
+    {
+        if (!$user instanceof Model) {
+            throw new \InvalidArgumentException(
+                'Notification preferences require an Eloquent model, '.$user::class.' given.'
+            );
+        }
+
+        return $user;
     }
 
     protected function preferenceKey(NotificationTypeEnum $type, NotificationChannelEnum $channel): string

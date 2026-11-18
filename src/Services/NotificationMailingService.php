@@ -35,10 +35,20 @@ class NotificationMailingService
         ?Model $user = null,
         ?Model $subject = null,
         ?array $meta = null,
+        Model|string|null $recipients = null,
     ): UserNotificationMailing {
         $typeValue = $notificationType instanceof NotificationTypeEnum
             ? $notificationType->getValue()
             : $notificationType;
+
+        if ($recipients instanceof Model) {
+            $recipients = $recipients::class;
+        }
+
+        if (is_string($recipients) && $recipients !== '') {
+            $meta ??= [];
+            $meta['recipient_model'] = $recipients;
+        }
 
         return UserNotificationMailing::query()->create([
             'user_type' => $user?->getMorphClass(),
@@ -120,7 +130,8 @@ class NotificationMailingService
     }
 
     /**
-     * Собрать пользователей, у которых для типа включён хотя бы один канал.
+     * Собрать получателей модели из meta.recipient_model,
+     * у которых для типа включён хотя бы один канал.
      *
      * Логика совпадает с NotificationPreferencesService:
      * - есть is_active=true в preferences → включён;
@@ -136,29 +147,43 @@ class NotificationMailingService
         $this->transitionStage($mailing, NotificationMailingStage::COLLECTING);
 
         try {
-            $userModel = $this->userModelClass();
-            /** @var Model $userInstance */
-            $userInstance = new $userModel;
-            $userMorph = $userInstance->getMorphClass();
-            $usersTable = $userInstance->getTable();
-            $userKey = $userInstance->getKeyName();
+            $recipientModel = $this->recipientModelClass($mailing);
+            /** @var Model $recipientInstance */
+            $recipientInstance = new $recipientModel;
+            $recipientMorph = $recipientInstance->getMorphClass();
+            $recipientsTableName = $recipientInstance->getTable();
+            $recipientKey = $recipientInstance->getKeyName();
             $preferencesTable = config('user-notification.preferences_table', 'user_notification_preferences');
             $typeValue = $mailing->notification_type;
             $defaultChannelValues = $this->defaultChannelValuesForType($typeValue);
             $recipientRoles = data_get($mailing->meta, 'recipient_roles');
 
-            $usersQuery = $userModel::query();
+            $recipientsQuery = $recipientModel::query();
 
-            if (is_array($recipientRoles) && $recipientRoles !== [] && method_exists($userModel, 'scopeRole')) {
-                $usersQuery->role($recipientRoles);
+            if (is_array($recipientRoles) && $recipientRoles !== [] && method_exists($recipientModel, 'scopeRole')) {
+                $recipientsQuery->role($recipientRoles);
             }
 
-            $userIds = $usersQuery
-                ->where(function ($query) use ($preferencesTable, $typeValue, $defaultChannelValues, $usersTable, $userKey) {
-                    $query->whereExists(function ($active) use ($preferencesTable, $typeValue, $usersTable, $userKey) {
+            $userIds = $recipientsQuery
+                ->where(function ($query) use (
+                    $preferencesTable,
+                    $typeValue,
+                    $defaultChannelValues,
+                    $recipientsTableName,
+                    $recipientKey,
+                    $recipientMorph,
+                ) {
+                    $query->whereExists(function ($active) use (
+                        $preferencesTable,
+                        $typeValue,
+                        $recipientsTableName,
+                        $recipientKey,
+                        $recipientMorph,
+                    ) {
                         $active->selectRaw('1')
                             ->from($preferencesTable)
-                            ->whereColumn("{$preferencesTable}.user_id", "{$usersTable}.{$userKey}")
+                            ->whereColumn("{$preferencesTable}.notifiable_id", "{$recipientsTableName}.{$recipientKey}")
+                            ->where("{$preferencesTable}.notifiable_type", $recipientMorph)
                             ->where('type', $typeValue)
                             ->where('is_active', true);
                     });
@@ -168,19 +193,21 @@ class NotificationMailingService
                             $preferencesTable,
                             $typeValue,
                             $channelValue,
-                            $usersTable,
-                            $userKey,
+                            $recipientsTableName,
+                            $recipientKey,
+                            $recipientMorph,
                         ) {
                             $optOut->selectRaw('1')
                                 ->from($preferencesTable)
-                                ->whereColumn("{$preferencesTable}.user_id", "{$usersTable}.{$userKey}")
+                                ->whereColumn("{$preferencesTable}.notifiable_id", "{$recipientsTableName}.{$recipientKey}")
+                                ->where("{$preferencesTable}.notifiable_type", $recipientMorph)
                                 ->where('type', $typeValue)
                                 ->where('channel', $channelValue);
                         });
                     }
                 })
-                ->orderBy($userKey)
-                ->pluck($userKey);
+                ->orderBy($recipientKey)
+                ->pluck($recipientKey);
 
             $channelCounts = [];
             $registeredChannels = NotificationRegistry::getChannels()
@@ -188,17 +215,18 @@ class NotificationMailingService
 
             foreach ($userIds->chunk(500) as $chunk) {
                 $prefsByUser = DB::table($preferencesTable)
+                    ->where('notifiable_type', $recipientMorph)
                     ->where('type', $typeValue)
-                    ->whereIn('user_id', $chunk->all())
-                    ->get(['user_id', 'channel', 'is_active'])
-                    ->groupBy('user_id');
+                    ->whereIn('notifiable_id', $chunk->all())
+                    ->get(['notifiable_id', 'channel', 'is_active'])
+                    ->groupBy(fn ($row) => (string) $row->notifiable_id);
 
                 $rows = [];
                 $now = now();
 
                 foreach ($chunk as $userId) {
                     $plannedChannelValues = $this->resolvePlannedChannelValues(
-                        $prefsByUser->get($userId),
+                        $prefsByUser->get((string) $userId),
                         $defaultChannelValues,
                         $registeredChannels->keys()->all(),
                     );
@@ -634,16 +662,21 @@ class NotificationMailingService
     }
 
     /**
+     * Модель аудитории рассылки. Задаётся при создании через $recipients
+     * или ключом meta.recipient_model.
+     *
      * @return class-string<Model>
      */
-    protected function userModelClass(): string
+    protected function recipientModelClass(UserNotificationMailing $mailing): string
     {
-        $userClass = config('user-notification.user_model', 'App\\Models\\User');
+        $class = data_get($mailing->meta, 'recipient_model');
 
-        if (!$userClass || !class_exists($userClass)) {
-            throw new \RuntimeException('user-notification.user_model is not configured');
+        if (!is_string($class) || !is_a($class, Model::class, true)) {
+            throw new \RuntimeException(
+                'Mailing meta.recipient_model must be an Eloquent model class.'
+            );
         }
 
-        return $userClass;
+        return $class;
     }
 }

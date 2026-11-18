@@ -2,20 +2,19 @@
 
 namespace UserNotification\Contracts;
 
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
- * Интерфейс для модели UserNotificationPreference
- * Пользователь библиотеки может использовать встроенную модель или создать свою,
- * реализующую этот интерфейс
+ * Интерфейс для модели UserNotificationPreference.
+ * Настройки принадлежат любой Eloquent-модели (полиморфная связь notifiable).
  */
 interface UserNotificationPreferenceInterface
 {
     /**
-     * Получить ID пользователя
+     * Получить ID владельца настроек
      * @return int|string
      */
-    public function getUserId();
+    public function getNotifiableId();
 
     /**
      * Получить тип уведомления
@@ -36,8 +35,8 @@ interface UserNotificationPreferenceInterface
     public function getIsActive(): bool;
 
     /**
-     * Связь с пользователем
-     * @return BelongsTo
+     * Владелец настроек: User, Agent и любая другая модель
+     * @return MorphTo
      */
-    public function user(): BelongsTo;
+    public function notifiable(): MorphTo;
 }

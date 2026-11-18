@@ -218,20 +218,20 @@ enum UserNotificationType: int implements NotificationTypeEnum
 Библиотека включает готовую модель `UserNotificationPreference` для хранения настроек уведомлений.
 
 **Структура таблицы:**
-- `user_id` - ID пользователя (unsignedBigInteger, foreign key с cascade delete)
+- `notifiable_type` - класс владельца настроек (полиморфная связь)
+- `notifiable_id` - ID владельца (unsignedBigInteger)
 - `type` - тип уведомления (unsignedTinyInteger, int значение enum NotificationTypeEnum)
 - `channel` - канал уведомления (unsignedTinyInteger, int значение enum NotificationChannelEnum)
 - `is_active` - активна ли настройка (boolean)
 
 **Особенности:**
-- Foreign key constraint на `user_id` с `cascadeOnDelete` - при удалении пользователя автоматически удаляются его настройки
-- Foreign key создается через модель User из конфига `user-notification.user_model`
+- Владелец — любая Eloquent-модель, которая реализует `NotifiableUser` (`User`, `Agent` и другие)
 - Имя таблицы настроек можно изменить через конфиг `user-notification.preferences_table`
 
 **Важно:** Enum'ы должны иметь int backing type (например, `enum UserNotificationType: int`).
 
 **Особенности модели:**
-- Без первичного ключа (составной ключ: user_id, type, channel)
+- Без автоинкрементного первичного ключа (составной ключ: notifiable_type, notifiable_id, type, channel)
 - Без timestamps
 - Без auto-increment
 
